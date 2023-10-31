@@ -102,17 +102,23 @@ RUN apt-get update && apt-get -y install \
     libmojolicious-perl \
     curl \
     libdigest-crc-perl \
+    libipc-system-simple-perl \
+    libtest2-suite-perl \
     jq
 
-RUN cpanm install Term::ReadLine
-RUN cpanm install Mail::IMAPTalk Net::CalDAVTalk Net::CardDAVTalk
-RUN cpanm install Convert::Base64 File::LibMagic;
-RUN cpanm install Net::LDAP::Constant
-RUN cpanm install Net::LDAP::Server
-RUN cpanm install Net::LDAP::Server::Test
-RUN cpanm install Math::Int64
-RUN cpanm install DBD::SQLite
-RUN cpanm install Mail::JMAPTalk
+RUN cpanm install DateTime::Format::ISO8601 \
+                  Term::ReadLine \
+                  Mail::IMAPTalk \
+                  Net::CalDAVTalk \
+                  Net::CardDAVTalk \
+                  Convert::Base64 \
+                  File::LibMagic \
+                  Net::LDAP::Constant \
+                  Net::LDAP::Server \
+                  Net::LDAP::Server::Test \
+                  Math::Int64 \
+                  DBD::SQLite \
+                  Mail::JMAPTalk
 
 RUN groupadd -r saslauth ; \
     groupadd -r mail ; \
