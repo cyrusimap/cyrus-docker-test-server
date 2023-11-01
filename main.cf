@@ -1,5 +1,5 @@
 myhostname = {SERVERNAME}.{DEFAULTDOMAIN}
-myorigin = $mydomain
+myorigin = {DEFAULTDOMAIN}
 relayhost = {RELAYHOST}
 inet_interfaces = loopback-only
 mydestination = {DEFAULTDOMAIN}
