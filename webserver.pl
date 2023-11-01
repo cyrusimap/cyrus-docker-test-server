@@ -7,6 +7,8 @@ use Cyrus::AccountSync;
 
 $| = 1;
 
+our $it;
+
 get '/' => sub {
   my $c = shift;
   $c->render(text => "Basic test server - read JSON for existing users or put JSON users");
@@ -17,6 +19,7 @@ get '/:userid' => sub {
   my $userid = $c->param('userid');
   my $as = _connect();
   my $data = $as->dump_user(username => $userid);
+  eval { $it->logout() };
   if ($data) {
     $c->render(json => $data);
   }
@@ -33,6 +36,7 @@ put '/:userid' => sub {
   $as->delete_user(username => $userid);
   $as->undump_user(username => $userid, data => $json);
   $c->render(text => '', status => 204);
+  eval { $it->logout() };
 };
 
 del '/:userid' => sub {
@@ -41,10 +45,11 @@ del '/:userid' => sub {
   my $as = _connect();
   $as->delete_user(username => $userid);
   $c->render(text => '', status => 204);
+  eval { $it->logout() };
 };
 
 sub _connect {
-  my $it = Mail::IMAPTalk->new(
+  $it = Mail::IMAPTalk->new(
     Server => 'localhost',
     Port => 8143,
     Username => 'admin',
