@@ -17,11 +17,11 @@ sudo docker build . -t cyrus-docker-test-server
 
 To run with port forwarding enabled
 
-sudo docker run -it -p 8080:8080 -p 8143:8143 -p 8001:8001 cyrus-test-server:latest
+sudo docker run -it -p 8080:8080 -p 8143:8143 -p 8001:8001 cyrus-docker-test-server:latest
 
 To inspect / edit:
 
-sudo docker run -it -p 8080:8080 -p 8143:8143 -p 8001:8001 --entrypoint=/bin/bash cyrus-test-server:latest
+sudo docker run -it -p 8080:8080 -p 8143:8143 -p 8001:8001 --entrypoint=/bin/bash cyrus-docker-test-server:latest
 
 Then to spin up the server while in:
 
