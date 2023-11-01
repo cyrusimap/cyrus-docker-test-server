@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# start syslog
+/etc/init.d/rsyslog start
+
 # set up Postfix
 if [ "X$RELAYHOST" != "" ]; then
   echo "$RELAYHOST $RELAYAUTH" >> /etc/postfix/sasl_passwd
@@ -7,6 +10,8 @@ if [ "X$RELAYHOST" != "" ]; then
 fi
 
 perl /srv/cyrus-docker-test-server.git/env-replace.pl /srv/cyrus-docker-test-server.git/main.cf /etc/postfix/main.cf
+
+/etc/init.d/postfix start
 
 # set up Cyrus
 perl /srv/cyrus-docker-test-server.git/env-replace.pl /srv/cyrus-docker-test-server.git/imapd.conf /etc/imapd.conf
