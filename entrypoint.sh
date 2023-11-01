@@ -1,8 +1,18 @@
 #!/bin/bash
 
-perl /srv/cyrus-docker-test-server.git/env-replace.pl /srv/cyrus-docker-test-server.git/imapd.conf /etc/imapd.conf
-perl /srv/cyrus-docker-test-server.git/env-replace.pl /srv/cyrus-docker-test-server.git/cyrus.conf /etc/cyrus.conf
-service rsyslog start
-/usr/cyrus/bin/master -p /var/run/cyrus/master.pid -d -L /var/run/cyrus/log
-perl -I /srv/cyrus-imapd.git/perl/imap /srv/cyrus-docker-test-server.git/make5.pl
-perl -I /srv/cyrus-imapd.git/perl/imap /srv/cyrus-docker-test-server.git/webserver.pl prefork -l http://*:8001
+cd /srv/cyrus-docker-test-server.git
+
+if [ "X$REFRESH" != "X" ]; then
+  git fetch
+  git checkout origin/master
+fi
+
+if [ "X$CYRUS_VERSION" != "X" ]; then
+  (cd /srv/cyrus-imapd.git; \
+   git fetch; \
+   git checkout $CYRUS_VERSION; \
+   env CFLAGS="-g -W -Wall -Wextra -Werror" CONFIGOPTS=" --enable-autocreate --enable-backup --enable-calalarmd --enable-gssapi --enable-http --enable-idled --enable-murder --enable-nntp --enable-replication --enable-shared --enable-silent-rules --enable-unit-tests --enable-xapian --enable-jmap --with-ldap=/usr" /srv/cyrus-imapd.git/tools/build-with-cyruslibs.sh
+  )
+fi
+
+bash run.sh

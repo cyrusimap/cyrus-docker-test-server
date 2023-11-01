@@ -155,6 +155,7 @@ EXPOSE 8080
 EXPOSE 8110
 EXPOSE 8143
 
+ENV SERVERNAME=cyrus-docker-test-server
 ENV DEFAULTDOMAIN=example.com
 
 ENTRYPOINT [ "/srv/cyrus-docker-test-server.git/entrypoint.sh" ]
