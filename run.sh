@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# set up Postfix
+if [ "X$RELAYHOST" != "" ]; then
+  echo "$RELAYHOST $RELAYAUTH" >> /etc/postfix/sasl_passwd
+  postmap /etc/postfix/sasl_passwd
+fi
+
+perl /srv/cyrus-docker-test-server.git/env-replace.pl /srv/cyrus-docker-test-server.git/main.cf /etc/postfix/main.cf
+
 # set up Cyrus
 perl /srv/cyrus-docker-test-server.git/env-replace.pl /srv/cyrus-docker-test-server.git/imapd.conf /etc/imapd.conf
 perl /srv/cyrus-docker-test-server.git/env-replace.pl /srv/cyrus-docker-test-server.git/cyrus.conf /etc/cyrus.conf

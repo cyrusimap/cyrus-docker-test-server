@@ -13,6 +13,13 @@ compatibility_level = 2
 smtpd_banner = $myhostname ESMTP $mail_name (Debian/GNU)
 biff = no
 
+# Sending
+smtp_sasl_auth_enable = yes
+smtp_sasl_security_options = noanonymous
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_use_tls = yes
+smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+
 # TLS parameters
 smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
 smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
