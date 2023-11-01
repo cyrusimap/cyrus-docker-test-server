@@ -9,19 +9,20 @@ import and delete users from the service, using HTTP: GET, PUT and DELETE.
 
 ## Building
 
-To build the docker image, check out the git repository and run:
+To update docker image, check out the git repository and run:
 
-sudo docker build . -t cyrus-docker-test-server
+sudo docker build . -t ghcr.io/cyrusimap/cyrus-docker-test-server:latest
+sudo docker push       ghcr.io/cyrusimap/cyrus-docker-test-server:latest
 
 # Running
 
 To run with port forwarding enabled
 
-sudo docker run -it -p 8080:8080 -p 8143:8143 -p 8001:8001 cyrus-docker-test-server:latest
+sudo docker run -it -p 8080:8080 -p 8143:8143 -p 8001:8001 ghcr.io/cyrusimap/cyrus-docker-test-server:latest
 
 To inspect / edit:
 
-sudo docker run -it -p 8080:8080 -p 8143:8143 -p 8001:8001 --entrypoint=/bin/bash cyrus-docker-test-server:latest
+sudo docker run -it -p 8080:8080 -p 8143:8143 -p 8001:8001 --entrypoint=/bin/bash ghcr.io/cyrusimap/cyrus-docker-test-server:latest
 
 Then to spin up the server while in:
 
