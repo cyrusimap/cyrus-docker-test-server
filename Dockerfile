@@ -127,6 +127,8 @@ RUN groupadd -r saslauth ; \
 
 RUN install -o cyrus -d /var/run/cyrus; install -o cyrus -d /var/imap; install -o cyrus -d /var/imap/config; install -o cyrus -d /var/imap/search; install -o cyrus -d /var/imap/spool
 
+RUN env DEBIAN_FRONTEND=noninteractive apt-get -y install postfix
+
 WORKDIR /srv
 
 RUN git config --global http.sslverify false && \
