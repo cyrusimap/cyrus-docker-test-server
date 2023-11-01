@@ -151,6 +151,7 @@ LABEL org.opencontainers.image.source="https://github.com/cyrusimap/cyrus-docker
 
 EXPOSE 8001
 EXPOSE 8080
+EXPOSE 8110
 EXPOSE 8143
 
 ENTRYPOINT [ "/srv/cyrus-docker-test-server.git/entrypoint.sh" ]
