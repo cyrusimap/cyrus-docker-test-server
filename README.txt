@@ -38,9 +38,13 @@ get:
 
 curl http://localhost:8001/username | jq --sort-keys . > userdata.json
 
-create:
+create an empty user:
 
-curl -T userdata.json http://localhost:8001/newusername
+curl -T examples/empty.json http://localhost:8001/newusername
+
+create a user with a couple of sample emails and saved uidvalidity:
+
+curl -T examples/userdata.json http://localhost:8001/newusername
 
 delete:
 curl -X DELETE http://localhost:8001/newusername
