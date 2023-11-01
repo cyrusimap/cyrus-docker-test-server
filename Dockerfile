@@ -150,6 +150,7 @@ RUN env CFLAGS="-g -W -Wall -Wextra -Werror" CONFIGOPTS=" --enable-autocreate --
 LABEL org.opencontainers.image.source="https://github.com/cyrusimap/cyrus-docker-test-server"
 
 WORKDIR /srv/cyrus-docker-test-server.git/
+RUN echo "hi"
 RUN git fetch; git rebase origin/master
 
 EXPOSE 8001
