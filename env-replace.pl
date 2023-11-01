@@ -7,7 +7,7 @@ my $dst = shift;
 
 my $data = read_file($src);
 
-$data =~ s[{([^}]+)}][$ENV{$1}//'']egs;
+$data =~ s[{{([^}]+)}}][$ENV{$1}//'']egs;
 
 open FH, ">$dst";
 print FH $data;
