@@ -19,7 +19,7 @@ my $it = Mail::IMAPTalk->new(
 my $sp = Cyrus::SyncProto->new($it);
 my $as = Cyrus::AccountSync->new($sp);
 
-my $json = decode_json(read_file("/srv/cyrus-docker-test-server.git/examples/empty.json"));
+my $json = decode_json(read_file("/srv/testserver/examples/empty.json"));
 
 for my $userid (map { "user$_" } 1..5) {
   print "making user $userid\n";

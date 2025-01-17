@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# start syslog
+if [ ! -e '/run/rsyslog.pid' ]; then
+  /usr/sbin/rsyslogd
+fi
+
+# set up Postfix
+if [ "X$RELAYAUTH" != "X" ]; then
+  echo "$RELAYHOST $RELAYAUTH" >> /etc/postfix/sasl_passwd
+  postmap /etc/postfix/sasl_passwd
+fi
+
+perl /srv/testserver/env-replace.pl /srv/testserver/main.cf /etc/postfix/main.cf
+
+/etc/init.d/postfix start
+
+# set up Cyrus
+perl /srv/testserver/env-replace.pl /srv/testserver/imapd.conf /etc/imapd.conf
+perl /srv/testserver/env-replace.pl /srv/testserver/cyrus.conf /etc/cyrus.conf
+/usr/cyrus/bin/master -p /var/run/cyrus/master.pid -d -L /var/run/cyrus/log
+
+# create users
+if [ "X$SKIP_CREATE_USERS" == "X" ]; then
+  perl -I /srv/cyrus-imapd/perl/imap /srv/testserver/make5.pl
+fi
+
+# run the webserver
+perl -I /srv/cyrus-imapd/perl/imap /srv/testserver/webserver.pl prefork -l http://*:8001
