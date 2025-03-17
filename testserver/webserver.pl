@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 use Mojolicious::Lite;
 use Mail::IMAPTalk;
@@ -7,7 +7,7 @@ use Cyrus::AccountSync;
 
 $| = 1;
 
-our $it;
+my $it;
 
 get '/' => sub {
   my $c = shift;

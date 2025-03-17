@@ -43,7 +43,7 @@ sudo docker run -it --entrypoint=/bin/bash ghcr.io/cyrusimap/cyrus-docker-test-s
 and then you need to run;
 
 ```
-/srv/cyrus-docker-test-server.git/entrypoint.sh
+/srv/cyrus-docker-test-server/entrypoint.sh
 ```
 
 To connect to a running instance, use:
