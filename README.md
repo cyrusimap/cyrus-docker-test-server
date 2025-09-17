@@ -3,7 +3,7 @@
 If you're looking to make changes, check DEVELOPER.txt
 
 This project is a docker image running an instance of the Cyrus IMAPd server
-with IMAP4, POP3, JMAP, LMTP, CalDAV, and CardDAV services running.
+with IMAP4, POP3, JMAP, LMTP, CalDAV, CardDAV and Sieve services running.
 
 Ports:
 
@@ -11,6 +11,7 @@ Ports:
 * POP3: 8110
 * HTTP: 8080 (JMAP, CalDAV, CardDAV)
 * LMTP: 8024
+* SIEVE: 4190
 
 There's also a management service running on port 8001 which can be used to export,
 import and delete users from the service, using HTTP: GET, PUT and DELETE.
@@ -30,7 +31,7 @@ To run a test server with all ports forwarded through
 
 ```
 sudo docker run -it --env-file=env.txt \
-  -p 8080:8080 -p 8143:8143 -p 8110:8110 -p 8024:8024 -p 8001:8001 \
+  -p 8080:8080 -p 8143:8143 -p 8110:8110 -p 8024:8024 -p 8001:8001 -p 4190:4190 \
   ghcr.io/cyrusimap/cyrus-docker-test-server:latest
 ```
 
