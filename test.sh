@@ -216,6 +216,28 @@ else
   fail "IMAP admin login succeeds"
 fi
 
+# JMAPACCESS capability and URL
+IMAP_OUT=$(tcp_cmd "$IMAP_PORT" "A001 LOGIN imaptest_$$ x\nA002 LOGOUT")
+if echo "$IMAP_OUT" | grep -q "JMAPACCESS"; then
+  pass "IMAP CAPABILITY includes JMAPACCESS"
+else
+  fail "IMAP CAPABILITY includes JMAPACCESS"
+fi
+
+IMAP_OUT=$(tcp_cmd "$IMAP_PORT" "A001 LOGIN imaptest_$$ x\nA002 GETJMAPACCESS\nA003 LOGOUT")
+JMAP_URL=$(echo "$IMAP_OUT" | grep '^\* JMAPACCESS' | sed 's/^\* JMAPACCESS //' | tr -d '\r"')
+if [ -n "$JMAP_URL" ]; then
+  pass "GETJMAPACCESS returns URL ($JMAP_URL)"
+  JMAP_ACCESS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -u "imaptest_$$:x" "$JMAP_URL" 2>&1)
+  if [ "$JMAP_ACCESS_STATUS" = "200" ]; then
+    pass "JMAPACCESS URL is reachable"
+  else
+    fail "JMAPACCESS URL is reachable - got HTTP $JMAP_ACCESS_STATUS"
+  fi
+else
+  fail "GETJMAPACCESS returns URL"
+fi
+
 # Clean up
 curl -s -X DELETE "http://$HOST:$WEB_PORT/api/imaptest_$$" >/dev/null 2>&1
 
