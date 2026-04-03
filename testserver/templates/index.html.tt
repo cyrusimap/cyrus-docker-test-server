@@ -1,0 +1,59 @@
+<h1>Cyrus Docker Test Server</h1>
+
+<div class="card">
+  <h2>Services</h2>
+  <div class="info-grid">
+    <div class="info-item">
+      <div class="label">IMAP</div>
+      <div class="value">Port [% imap_port %]</div>
+    </div>
+    <div class="info-item">
+      <div class="label">POP3</div>
+      <div class="value">Port [% pop3_port %]</div>
+    </div>
+    <div class="info-item">
+      <div class="label">HTTP (JMAP/CalDAV/CardDAV)</div>
+      <div class="value">Port [% http_port %]</div>
+    </div>
+    <div class="info-item">
+      <div class="label">LMTP</div>
+      <div class="value">Port [% lmtp_port %]</div>
+    </div>
+    <div class="info-item">
+      <div class="label">Sieve</div>
+      <div class="value">Port [% sieve_port %]</div>
+    </div>
+    <div class="info-item">
+      <div class="label">Management</div>
+      <div class="value">Port [% web_port %]</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Quick Start</h2>
+  <p style="margin-bottom: 8px;">All users accept any password. Default users: <code>user1</code> through <code>user5</code>.</p>
+  <p style="margin-bottom: 12px;">Admin account: <code>admin</code> / <code>admin</code></p>
+
+  <h3>IMAP</h3>
+  <pre>telnet localhost [% imap_port %]
+. LOGIN user1 x
+. SELECT INBOX
+. LOGOUT</pre>
+
+  <h3>JMAP</h3>
+  <pre>curl -u user1:x -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"methodCalls":[["Mailbox/get",{},"1"]],"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:mail"]}' \
+  http://localhost:[% http_port %]/jmap/</pre>
+</div>
+
+<div class="card">
+  <h2>API</h2>
+  <table>
+    <tr><th>Action</th><th>Method</th><th>Endpoint</th></tr>
+    <tr><td>Get user data</td><td><span class="badge badge-info">GET</span></td><td><code>/api/{username}</code></td></tr>
+    <tr><td>Create/replace user</td><td><span class="badge badge-info">PUT</span></td><td><code>/api/{username}</code></td></tr>
+    <tr><td>Delete user</td><td><span class="badge badge-info">DELETE</span></td><td><code>/api/{username}</code></td></tr>
+  </table>
+</div>

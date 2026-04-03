@@ -1,0 +1,43 @@
+<h1>Users</h1>
+
+[% IF flash_success %]
+  <div class="alert alert-success">[% flash_success %]</div>
+[% END %]
+[% IF flash_error %]
+  <div class="alert alert-error">[% flash_error %]</div>
+[% END %]
+[% IF error %]
+  <div class="alert alert-error">Error listing users: [% error %]</div>
+[% END %]
+
+<div class="card">
+  <h2>Create User</h2>
+  <form method="POST" action="/ui/users" class="form-inline">
+    <input type="text" name="userid" placeholder="username" required pattern="[a-zA-Z0-9._-]+">
+    <button type="submit" class="btn btn-primary">Create User</button>
+  </form>
+  <p style="margin-top: 8px; font-size: 13px; color: #888;">New users accept any password for login.</p>
+</div>
+
+<div class="card">
+  <h2>Existing Users ([% users.size %])</h2>
+  [% IF users.size %]
+    <table>
+      <tr><th>Username</th><th>Actions</th></tr>
+      [% FOREACH user IN users %]
+        <tr>
+          <td><a href="/ui/users/[% user %]">[% user %]</a></td>
+          <td>
+            <a href="/ui/users/[% user %]" class="btn btn-primary btn-sm">View</a>
+            <form method="POST" action="/ui/users/[% user %]/delete" style="display:inline"
+                  onsubmit="return confirm('Delete user [% user %]?')">
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </td>
+        </tr>
+      [% END %]
+    </table>
+  [% ELSE %]
+    <p style="color: #888;">No users found.</p>
+  [% END %]
+</div>

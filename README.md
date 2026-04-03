@@ -1,9 +1,13 @@
 # README for Cyrus test server
 
-If you're looking to make changes, check DEVELOPER.txt
+If you're looking to make changes, check DEVELOPER.md
 
 This project is a docker image running an instance of the Cyrus IMAPd server
 with IMAP4, POP3, JMAP, LMTP, CalDAV, CardDAV and Sieve services running.
+
+The image uses a multi-stage build: Cyrus is compiled in the full
+`cyrus-docker:bookworm` dev image, then only the runtime files are copied
+into a slim `debian:bookworm-slim` base, producing a much smaller image.
 
 Ports:
 
@@ -12,18 +16,16 @@ Ports:
 * HTTP: 8080 (JMAP, CalDAV, CardDAV)
 * LMTP: 8024
 * SIEVE: 4190
-
-There's also a management service running on port 8001 which can be used to export,
-import and delete users from the service, using HTTP: GET, PUT and DELETE.
+* Management web UI / API: 8001 (configurable via `WEBPORT`)
 
 ## ENVIRONMENT (set in env.txt for the example below)
 
-* `REFRESH` - if set, fetch the latest cyrus-docker-test-server code (useful for development)
-* `CYRUS_VERSION` - if set, build a new cyrus with the named branch
 * `DEFAULTDOMAIN` - replace the default domain (default: example.com)
 * `SERVERNAME` - replace the server name (default: cyrus-docker-test-server)
+* `WEBPORT` - management web UI port (default: 8001)
 * `RELAYHOST` - if set, send email via this relay (e.g. smtp.fastmail.com)
 * `RELAYAUTH` - if set, use this auth (e.g. user:pass)
+* `SKIP_CREATE_USERS` - if set, skip creating default users (user1-user5)
 
 # Running
 
@@ -41,64 +43,69 @@ To inspect / edit:
 sudo docker run -it --entrypoint=/bin/bash ghcr.io/cyrusimap/cyrus-docker-test-server:latest
 ```
 
-and then you need to run;
-
-```
-/srv/cyrus-docker-test-server/entrypoint.sh
-```
-
 To connect to a running instance, use:
 
 ```
 sudo docker ps
-```
-
-And once you have the process - to look inside:
-
-```
 sudo docker exec -it <id> /bin/bash
 ```
 
+# Web Management Interface
 
-# To create or manage users (from outside)
+Open http://localhost:8001/ in a browser for a web UI to:
 
-get:
+* View running services and connection info
+* List, create, and delete users
+* View user data (mailboxes, messages) as JSON
+* Export/import user data
 
-```
-curl http://localhost:8001/username | jq --sort-keys . > userdata.json
-```
+# API
 
-create an empty user:
+The JSON API is available under `/api/` (the legacy root-level routes also
+still work for backwards compatibility with existing scripts).
 
-```
-curl -T examples/empty.json http://localhost:8001/newusername
-```
-
-create a user with a couple of sample emails and saved uidvalidity:
-
-```
-curl -T examples/userdata.json http://localhost:8001/newusername
-```
-
-delete:
+Get user data:
 
 ```
-curl -X DELETE http://localhost:8001/newusername
+curl http://localhost:8001/api/username | jq --sort-keys .
 ```
 
-login with IMAP:
+Create an empty user:
 
 ```
-% telnet localhost 8143
-. LOGIN newusername x
+curl -T examples/empty.json http://localhost:8001/api/newusername
+```
+
+Create a user with sample data:
+
+```
+curl -T examples/userdata.json http://localhost:8001/api/newusername
+```
+
+Delete a user:
+
+```
+curl -X DELETE http://localhost:8001/api/newusername
+```
+
+# Connecting
+
+All users accept any password (fakesaslauthd). Default users are
+`user1` through `user5`. Admin account: `admin` / `admin`.
+
+IMAP:
+
+```
+telnet localhost 8143
+. LOGIN user1 x
 . SELECT INBOX
-...
 . LOGOUT
 ```
 
-raw JMAP commands:
+JMAP:
 
 ```
-curl -u username:x -X POST -H "Content-Type: application/json" -d '{"methodCalls":[["Mailbox/get", {}, "1"]],"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:mail"]}' http://localhost:8080/jmap/
+curl -u user1:x -X POST -H "Content-Type: application/json" \
+  -d '{"methodCalls":[["Mailbox/get", {}, "1"]],"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:mail"]}' \
+  http://localhost:8080/jmap/
 ```
-

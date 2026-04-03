@@ -1,0 +1,2 @@
+<div class="alert alert-error">[% message %]</div>
+<a href="/ui/users" class="btn btn-primary">&larr; Back to Users</a>

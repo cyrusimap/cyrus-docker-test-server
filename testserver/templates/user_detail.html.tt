@@ -1,0 +1,22 @@
+<h1>User: [% userid %]</h1>
+
+<p style="margin-bottom: 16px;">
+  <a href="/ui/users" class="btn btn-primary btn-sm">&larr; Back to Users</a>
+  <form method="POST" action="/ui/users/[% userid %]/delete" style="display:inline"
+        onsubmit="return confirm('Delete user [% userid %]?')">
+    <button type="submit" class="btn btn-danger btn-sm">Delete User</button>
+  </form>
+</p>
+
+<div class="card">
+  <h2>User Data (JSON)</h2>
+  <pre>[% json %]</pre>
+</div>
+
+<div class="card">
+  <h2>API Access</h2>
+  <p style="margin-bottom: 8px;">Export:</p>
+  <pre>curl http://localhost:[% web_port %]/api/[% userid %] | jq .</pre>
+  <p style="margin: 12px 0 8px;">Import:</p>
+  <pre>curl -T data.json http://localhost:[% web_port %]/api/[% userid %]</pre>
+</div>

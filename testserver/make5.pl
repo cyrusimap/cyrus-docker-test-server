@@ -25,6 +25,12 @@ for my $userid (map { "user$_" } 1..5) {
   print "making user $userid\n";
   $as->delete_user(username => $userid);
   $as->undump_user(username => $userid, data => $json);
+  # sync/undump doesn't set ACLs, so grant the user full rights on all mailboxes
+  my $folders = $it->list("user.$userid", '*') || [];
+  for my $mbox ("user.$userid", map { $_->[2] } @$folders) {
+    $it->setacl($mbox, $userid, "lrswipkxtecdan");
+    $it->setacl($mbox, "admin", "lrswipkxtecdan");
+  }
 }
 
 $it->logout();
