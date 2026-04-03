@@ -331,6 +331,30 @@ else
   fail "CardDAV well-known endpoint responds - got HTTP $CARDDAV_STATUS"
 fi
 
+# Calendar/set - create a calendar (issue #4 regression test)
+CAL_OUT=$(curl -sf -u "jmaptest_$$:x" -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:calendars"],"methodCalls":[["Calendar/set",{"create":{"new0":{"name":"TestCal"}}},"0"]]}' \
+  "http://$HOST:$HTTP_PORT/jmap/" 2>&1) || true
+
+if echo "$CAL_OUT" | grep -q '"created"' && ! echo "$CAL_OUT" | grep -q '"created":null'; then
+  pass "Calendar/set creates a calendar"
+else
+  fail "Calendar/set creates a calendar"
+fi
+
+# AddressBook/set - create an address book (issue #4 regression test)
+AB_OUT=$(curl -sf -u "jmaptest_$$:x" -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:contacts"],"methodCalls":[["AddressBook/set",{"create":{"new0":{"name":"TestAB"}}},"0"]]}' \
+  "http://$HOST:$HTTP_PORT/jmap/" 2>&1) || true
+
+if echo "$AB_OUT" | grep -q '"created"' && ! echo "$AB_OUT" | grep -q '"created":null'; then
+  pass "AddressBook/set creates an address book"
+else
+  fail "AddressBook/set creates an address book"
+fi
+
 curl -s -X DELETE "http://$HOST:$WEB_PORT/api/jmaptest_$$" >/dev/null 2>&1
 
 echo ""
