@@ -122,7 +122,7 @@ post '/ui/users' => sub {
   eval {
     my $json = decode_json(read_file("/srv/testserver/examples/empty.json"));
     my $as = _connect();
-    $as->delete_user(username => $userid);
+    _delete_user_completely($as, $userid);
     $as->undump_user(username => $userid, data => $json);
     _set_user_acls($userid);
     eval { $it->logout() };
@@ -140,7 +140,7 @@ post '/ui/users/:userid/delete' => sub {
   my $userid = $c->param('userid');
   eval {
     my $as = _connect();
-    $as->delete_user(username => $userid);
+    _delete_user_completely($as, $userid);
     eval { $it->logout() };
   };
   if ($@) {
@@ -172,7 +172,7 @@ put '/api/:userid' => sub {
   my $userid = $c->param('userid');
   my $json = $c->req->json;
   my $as = _connect();
-  $as->delete_user(username => $userid);
+  _delete_user_completely($as, $userid);
   $as->undump_user(username => $userid, data => $json);
   _set_user_acls($userid);
   $c->render(text => '', status => 204);
@@ -183,7 +183,7 @@ del '/api/:userid' => sub {
   my $c   = shift;
   my $userid = $c->param('userid');
   my $as = _connect();
-  $as->delete_user(username => $userid);
+  _delete_user_completely($as, $userid);
   $c->render(text => '', status => 204);
   eval { $it->logout() };
 };
@@ -210,7 +210,7 @@ put '/:userid' => [userid => qr/[^\/]+/] => sub {
   return $c->reply->not_found if $userid =~ /^(ui|api)$/;
   my $json = $c->req->json;
   my $as = _connect();
-  $as->delete_user(username => $userid);
+  _delete_user_completely($as, $userid);
   $as->undump_user(username => $userid, data => $json);
   _set_user_acls($userid);
   $c->render(text => '', status => 204);
@@ -222,10 +222,25 @@ del '/:userid' => [userid => qr/[^\/]+/] => sub {
   my $userid = $c->param('userid');
   return $c->reply->not_found if $userid =~ /^(ui|api)$/;
   my $as = _connect();
-  $as->delete_user(username => $userid);
+  _delete_user_completely($as, $userid);
   $c->render(text => '', status => 204);
   eval { $it->logout() };
 };
+
+# Delete a user and all their tombstone records so the username can be reused.
+# AccountSync::delete_user (APPLY UNUSER) removes active mailboxes but leaves
+# DELETED.* tombstones (for calendars, addressbooks, and previously deleted
+# mailboxes). AccountSync::undump_user refuses to recreate if any records
+# remain, so we must UNMAILBOX every tombstone after UNUSER.
+sub _delete_user_completely {
+  my ($as, $userid) = @_;
+  $as->delete_user(username => $userid);
+  my $sp = $as->{sync};
+  my $info = $sp->dlwrite("GET", "USER", $userid);
+  for my $mbox (@{$info->{MAILBOX} // []}) {
+    $sp->dlwrite("APPLY", "UNMAILBOX", $mbox->{MBOXNAME});
+  }
+}
 
 sub _set_user_acls {
   my ($userid) = @_;
