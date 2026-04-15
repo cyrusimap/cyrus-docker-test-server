@@ -1,0 +1,45 @@
+{
+   "mailboxes" : [
+      {
+         "name" : "INBOX",
+         "subscribed" : true
+      },
+      {
+         "name" : "Archive",
+         "subscribed" : true,
+         "specialUse" : "\\Archive"
+      },
+      {
+         "name" : "Drafts",
+         "subscribed" : true,
+         "specialUse" : "\\Drafts"
+      },
+      {
+         "name" : "Lists",
+         "subscribed" : true
+      },
+      {
+         "name" : "Personal",
+         "subscribed" : true
+      },
+      {
+         "name" : "Sent",
+         "subscribed" : true,
+         "specialUse" : "\\Sent"
+      },
+      {
+         "name" : "Spam",
+         "subscribed" : true,
+         "specialUse" : "\\Junk"
+      },
+      {
+         "name" : "Trash",
+         "subscribed" : true,
+         "specialUse" : "\\Trash"
+      },
+      {
+         "name" : "Work",
+         "subscribed" : true
+      }
+   ]
+}

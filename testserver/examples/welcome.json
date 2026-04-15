@@ -1,0 +1,56 @@
+{
+   "mailboxes": [
+      {
+         "name": "INBOX",
+         "subscribed": true,
+         "uidValidity": 1,
+         "nextUid": 3,
+         "highestModificationSequenceValue": 2,
+         "emails": [
+            {
+               "uid": 1,
+               "modseq": 1,
+               "flags": [
+                  "$IsTrusted"
+               ],
+               "internalDate": "Mon, 01 Jan 2024 09:00:00 +0000",
+               "rawMessage": "From: Cyrus Team <admin@example.com>\r\nTo: user1@example.com\r\nSubject: Welcome to the Cyrus Test Server\r\nDate: Mon, 01 Jan 2024 09:00:00 +0000\r\nMessage-ID: <welcome-1@cyrus-docker-test-server>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nWelcome to the Cyrus Test Server!\r\n\r\nThis is a test instance of the Cyrus IMAP server, configured for\r\ndevelopment and testing purposes.\r\n\r\nQuick facts:\r\n  - Any password is accepted (fakesaslauthd is running)\r\n  - Default users: user1 through user5\r\n  - Admin account: admin / admin\r\n  - All services are pre-configured and running\r\n\r\nServices available:\r\n  - IMAP    port 8143\r\n  - POP3    port 8110\r\n  - JMAP    port 8080\r\n  - CalDAV  port 8080\r\n  - CardDAV port 8080\r\n  - Sieve   port 4190\r\n\r\nEnjoy testing!\r\n\r\n-- The Cyrus Team\r\n"
+            },
+            {
+               "uid": 2,
+               "modseq": 2,
+               "flags": [
+                  "$IsTrusted"
+               ],
+               "internalDate": "Mon, 01 Jan 2024 09:01:00 +0000",
+               "rawMessage": "From: Cyrus Team <admin@example.com>\r\nTo: user1@example.com\r\nSubject: How to use this server\r\nDate: Mon, 01 Jan 2024 09:01:00 +0000\r\nMessage-ID: <welcome-2@cyrus-docker-test-server>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHow to use the Cyrus Test Server\r\n=================================\r\n\r\nIMAP access:\r\n  telnet localhost 8143\r\n  a LOGIN user1 anypassword\r\n  a LIST \"\" \"*\"\r\n  a SELECT INBOX\r\n  a FETCH 1 (ENVELOPE)\r\n  a LOGOUT\r\n\r\nJMAP access:\r\n  curl -u user1:x -X POST -H 'Content-Type: application/json' \\\r\n    -d '{\"methodCalls\":[[\"Mailbox/get\",{},\"1\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:mail\"]}' \\\r\n    http://localhost:8080/jmap/\r\n\r\nCalDAV / CardDAV:\r\n  curl -u user1:x http://localhost:8080/dav/principals/user/user1/\r\n\r\nManagement Web UI:\r\n  Open http://localhost:8001/ in your browser.\r\n  - View users, create/delete accounts\r\n  - Export user data as JSON\r\n  - Import JSON to seed accounts\r\n\r\nAPI:\r\n  curl http://localhost:8001/api/user1 | jq .\r\n  curl -T examples/empty.json http://localhost:8001/api/newuser\r\n  curl -X DELETE http://localhost:8001/api/newuser\r\n\r\nFor more information, see the README.md in the source repository:\r\n  https://github.com/cyrusimap/cyrus-docker-test-server\r\n"
+            }
+         ]
+      },
+      {
+         "name": "Archive",
+         "subscribed": true,
+         "specialUse": "\\Archive"
+      },
+      {
+         "name": "Drafts",
+         "subscribed": true,
+         "specialUse": "\\Drafts"
+      },
+      {
+         "name": "Sent",
+         "subscribed": true,
+         "specialUse": "\\Sent"
+      },
+      {
+         "name": "Spam",
+         "subscribed": true,
+         "specialUse": "\\Junk"
+      },
+      {
+         "name": "Trash",
+         "subscribed": true,
+         "specialUse": "\\Trash"
+      }
+   ]
+}
