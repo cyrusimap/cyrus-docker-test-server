@@ -71,12 +71,13 @@ get '/ui/users' => sub {
       UseBlocking => 1,
       UseCompress => 0,
     );
-    my $folders = $imap->list('user.', '%') || [];
+    my $ns = $imap->namespace();
+    my $prefix = $ns->[1][0][0] // 'Other Users/';
+    my $folders = $imap->list($prefix, '%') || [];
     for my $entry (@$folders) {
       my $name = $entry->[2];
-      if ($name =~ m{^user[./](.+)$}) {
-        push @users, $1;
-      }
+      (my $user = $name) =~ s/^\Q$prefix\E//;
+      push @users, $user if $user;
     }
     $imap->logout();
   };
@@ -244,8 +245,11 @@ sub _delete_user_completely {
 
 sub _set_user_acls {
   my ($userid) = @_;
-  my $folders = $it->list("user.$userid", '*') || [];
-  for my $mbox ("user.$userid", map { $_->[2] } @$folders) {
+  my $ns = $it->namespace();
+  my $prefix = $ns->[1][0][0] // 'Other Users/';
+  my $user_mbox = $prefix . $userid;
+  my $folders = $it->list($user_mbox, '*') || [];
+  for my $mbox ($user_mbox, map { $_->[2] } @$folders) {
     $it->setacl($mbox, $userid, "lrswipkxtecdan");
     $it->setacl($mbox, "admin", "lrswipkxtecdan");
   }
