@@ -176,6 +176,7 @@ put '/api/:userid' => sub {
   _delete_user_completely($as, $userid);
   $as->undump_user(username => $userid, data => $json);
   _set_user_acls($userid);
+  _set_user_quota($userid, $json->{quota_kb}) if defined $json->{quota_kb};
   $c->render(text => '', status => 204);
   eval { $it->logout() };
 };
@@ -214,6 +215,7 @@ put '/:userid' => [userid => qr/[^\/]+/] => sub {
   _delete_user_completely($as, $userid);
   $as->undump_user(username => $userid, data => $json);
   _set_user_acls($userid);
+  _set_user_quota($userid, $json->{quota_kb}) if defined $json->{quota_kb};
   $c->render(text => '', status => 204);
   eval { $it->logout() };
 };
@@ -253,6 +255,11 @@ sub _set_user_acls {
     $it->setacl($mbox, $userid, "lrswipkxtecdan");
     $it->setacl($mbox, "admin", "lrswipkxtecdan");
   }
+}
+
+sub _set_user_quota {
+  my ($userid, $quota_kb) = @_;
+  $it->_imap_cmd("SETQUOTA", 0, "", "user/$userid", ["STORAGE", $quota_kb + 0]);
 }
 
 sub _connect {
