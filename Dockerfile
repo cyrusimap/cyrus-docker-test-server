@@ -9,6 +9,9 @@ cyd clone
 cyd build
 END
 
+# Install Mail::JMAPTalk and its pure-Perl dependencies
+RUN cpanm --notest --quiet Mail::JMAPTalk
+
 ########################################
 # Stage 2: Slim runtime image
 ########################################
@@ -68,7 +71,8 @@ apt-get install -y --no-install-recommends \
     libjson-perl \
     libdata-uuid-perl \
     libmoo-perl \
-    libtype-tiny-perl
+    libtype-tiny-perl \
+    libfile-libmagic-perl
 apt-get clean
 rm -rf /var/lib/apt/lists/*
 END
@@ -84,6 +88,10 @@ COPY --from=builder /srv/cyrus-imapd/cassandane/utils/fakesaslauthd /usr/cyrus/b
 
 # Tie::DataUUID: pure Perl, not packaged for Debian, needed by Cyrus::AccountSync
 COPY --from=builder /usr/local/share/perl/5.36.0/Tie/DataUUID.pm /tmp/DataUUID.pm
+
+# Mail::JMAPTalk and its deps (Convert::Base64) installed via cpanm in builder
+COPY --from=builder /usr/local/share/perl/5.36.0/Mail/JMAPTalk.pm /usr/local/share/perl/5.36.0/Mail/JMAPTalk.pm
+COPY --from=builder /usr/local/share/perl/5.36.0/Convert/ /usr/local/share/perl/5.36.0/Convert/
 
 # Ensure the dynamic linker can find cyruslibs
 RUN echo "/usr/cyrus/lib" > /etc/ld.so.conf.d/cyrus.conf \
