@@ -146,7 +146,12 @@ curl http://localhost:8001/api/user1/pdpa -o user1.zip
 ### Import
 
 ```sh
-# Import (merge into existing folder structure)
+# Import into an existing user (merge into existing folder structure)
+curl -X POST http://localhost:8001/api/existinguser/pdpa \
+  -H 'Content-Type: application/zip' \
+  --data-binary @user1.zip
+
+# Create a new user directly from a PDPA archive (user is auto-created if absent)
 curl -X POST http://localhost:8001/api/newuser/pdpa \
   -H 'Content-Type: application/zip' \
   --data-binary @user1.zip
@@ -154,9 +159,10 @@ curl -X POST http://localhost:8001/api/newuser/pdpa \
 
 On success: `{"ok":true}`
 
-The import creates any missing mailboxes, imports messages via IMAP APPEND,
-and creates contacts and calendars via JMAP. Existing data is not replaced —
-the imported data is added alongside it.
+If the user does not yet exist, they are created with an empty INBOX before
+the import runs. The import then creates any missing mailboxes, imports
+messages via IMAP APPEND, and creates contacts and calendars via JMAP.
+Existing data is not replaced — the imported data is added alongside it.
 
 ## Example account files
 

@@ -234,7 +234,7 @@ get '/api/:userid/pdpa' => sub {
   $c->render(data => $zip);
 };
 
-# Import: POST /api/:userid/pdpa  ← application/zip body
+# Import: POST /api/:userid/pdpa  ← application/zip body  (auto-creates user if absent)
 post '/api/:userid/pdpa' => sub {
   my $c      = shift;
   my $userid = $c->param('userid');
@@ -246,7 +246,13 @@ post '/api/:userid/pdpa' => sub {
 
   my %files = _unzip($body);
 
-  _connect();
+  my $as = _connect();
+  unless ($as->dump_user(username => $userid)) {
+    $as->undump_user(username => $userid,
+                     data => { mailboxes => [{ name => 'INBOX', subscribed => \1 }] });
+    _set_user_acls($userid);
+  }
+
   my @errors;
   eval { _pdpa_import_mail($userid, \%files) };
   push @errors, "mail: $@" if $@;
