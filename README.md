@@ -108,6 +108,56 @@ curl -X DELETE http://localhost:8001/api/newusername
 Legacy root-level routes (e.g. `GET /username`) still work for backwards
 compatibility with existing scripts.
 
+## Creating users with quota
+
+The `PUT /api/:userid` body accepts an optional `quota_kb` field to set the
+user's storage quota (in kilobytes) at creation time:
+
+```sh
+curl -X PUT http://localhost:8001/api/alice \
+  -H 'Content-Type: application/json' \
+  -d '{"mailboxes":[{"name":"INBOX","subscribed":true}],"quota_kb":102400}'
+```
+
+If `quota_kb` is omitted, no quota is set.
+
+## PDPA (Personal Data Portability Archive)
+
+The server supports export and import of account data as a PDPA zip archive
+per [draft-ietf-mailmaint-pdparchive](https://datatracker.ietf.org/doc/draft-ietf-mailmaint-pdparchive/).
+
+The archive format is a zip file containing:
+
+- `archive.json` — metadata (generator, timestamp, version)
+- `mail/{folder}/folder.json` — folder metadata with message list
+- `mail/{folder}/{uid}.eml` — raw RFC-822 messages
+- `contacts/{addressbook}/folder.json` — address book metadata
+- `contacts/{addressbook}/{uid}.json` — JSContact cards
+- `calendars/{calendar}/folder.json` — calendar metadata
+- `calendars/{calendar}/{uid}.json` — JSCalendar events (jscalendarbis-15)
+
+### Export
+
+```sh
+# Download all data for a user as a zip
+curl http://localhost:8001/api/user1/pdpa -o user1.zip
+```
+
+### Import
+
+```sh
+# Import (merge into existing folder structure)
+curl -X POST http://localhost:8001/api/newuser/pdpa \
+  -H 'Content-Type: application/zip' \
+  --data-binary @user1.zip
+```
+
+On success: `{"ok":true}`
+
+The import creates any missing mailboxes, imports messages via IMAP APPEND,
+and creates contacts and calendars via JMAP. Existing data is not replaced —
+the imported data is added alongside it.
+
 ## Example account files
 
 The `testserver/examples/` directory contains JSON files for seeding new accounts:
