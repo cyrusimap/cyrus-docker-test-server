@@ -29,6 +29,8 @@
     .btn-primary:hover { background: #2980b9; }
     .btn-danger { background: #e74c3c; color: white; }
     .btn-danger:hover { background: #c0392b; }
+    .btn-success { background: #27ae60; color: white; }
+    .btn-success:hover { background: #219a52; }
     .btn-sm { padding: 4px 10px; font-size: 13px; }
     input[type="text"] { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;
                          font-size: 14px; width: 250px; }

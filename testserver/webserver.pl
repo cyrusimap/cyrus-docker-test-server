@@ -97,25 +97,88 @@ get '/ui/users' => sub {
 };
 
 get '/ui/users/:userid' => sub {
-  my $c = shift;
+  my $c      = shift;
   my $userid = $c->param('userid');
-  my $as = _connect();
-  my $data = $as->dump_user(username => $userid);
-  eval { $it->logout() };
-  if ($data) {
-    my $json = JSON::XS->new->pretty->canonical->encode($data);
-    render_tt($c, 'user_detail.html.tt',
-      title  => $userid,
-      userid => $userid,
-      json   => $json,
-    );
-  }
-  else {
-    render_tt($c, 'error.html.tt',
+  _connect();
+
+  my $ns     = $it->namespace();
+  my $prefix = ($ns->[1][0][0] // 'Other Users/') . $userid;
+
+  unless ($it->status($prefix, '(MESSAGES)')) {
+    eval { $it->logout() };
+    return render_tt($c, 'error.html.tt',
       title   => 'Error',
       message => "User '$userid' not found",
     );
   }
+
+  my $listed = $it->list($prefix, '*') || [];
+  my %seen;
+  my @mboxes = grep { !$seen{$_}++ } ($prefix, map { $_->[2] } @$listed);
+
+  my @mailboxes;
+  for my $mbox (sort @mboxes) {
+    my $path   = _mbox_to_pdpa_path($mbox, $prefix);
+    my $status = $it->status($mbox, '(MESSAGES UNSEEN)') // {};
+    push @mailboxes, {
+      name     => $path,
+      messages => $status->{messages} // 0,
+      unseen   => $status->{unseen}   // 0,
+    };
+  }
+
+  my ($quota_used, $quota_limit, $quota_pct);
+  eval {
+    my $qres = $it->_imap_cmd("GETQUOTA", 0, "quota", "user/$userid");
+    my $storage = $qres->{quota}{storage} // $qres->{quota}{STORAGE};
+    if ($storage && ref($storage) eq 'ARRAY') {
+      ($quota_used, $quota_limit) = @$storage;
+      $quota_pct = int($quota_used / $quota_limit * 100) if $quota_limit;
+    }
+  };
+
+  eval { $it->logout() };
+
+  my @addressbooks;
+  eval {
+    my $using  = ['urn:ietf:params:jmap:core', 'urn:ietf:params:jmap:contacts'];
+    my $ab_res = _jmap_call($userid, $using, [['AddressBook/get', {}, 'a']]);
+    for my $ab (@{ $ab_res->[0][1]{list} // [] }) {
+      my $q_res = _jmap_call($userid, $using, [
+        ['ContactCard/query', { filter => { inAddressBook => $ab->{id} } }, 'q'],
+      ]);
+      push @addressbooks, {
+        name  => $ab->{name} // $ab->{id},
+        count => $q_res->[0][1]{total} // scalar(@{ $q_res->[0][1]{ids} // [] }),
+      };
+    }
+  };
+
+  my @calendars;
+  eval {
+    my $using   = ['urn:ietf:params:jmap:core', 'urn:ietf:params:jmap:calendars'];
+    my $cal_res = _jmap_call($userid, $using, [['Calendar/get', {}, 'c']]);
+    for my $cal (@{ $cal_res->[0][1]{list} // [] }) {
+      my $q_res = _jmap_call($userid, $using, [
+        ['CalendarEvent/query', { filter => { inCalendar => $cal->{id} } }, 'q'],
+      ]);
+      push @calendars, {
+        name  => $cal->{name} // $cal->{id},
+        count => $q_res->[0][1]{total} // scalar(@{ $q_res->[0][1]{ids} // [] }),
+      };
+    }
+  };
+
+  render_tt($c, 'user_detail.html.tt',
+    title        => $userid,
+    userid       => $userid,
+    mailboxes    => \@mailboxes,
+    addressbooks => \@addressbooks,
+    calendars    => \@calendars,
+    quota_used   => $quota_used,
+    quota_limit  => $quota_limit,
+    quota_pct    => $quota_pct,
+  );
 };
 
 post '/ui/users' => sub {
