@@ -13,7 +13,7 @@ build:
 
 run: stop
 	docker run --platform $(PLATFORM) -d --name $(CONTAINER_NAME) \
-	  -p 8080:8080 -p 8143:8143 -p 8110:8110 -p 8024:8024 -p 8001:8001 -p 4190:4190 \
+	  -p 8080:8080 -p 8143:8143 -p 8110:8110 -p 8024:8024 -p 8001:8001 -p 4190:4190 -p 8587:8587 \
 	  $(IMAGE_NAME):$(TAG)
 	@echo "Waiting for container to be ready..."
 	@for i in $$(seq 1 $(STARTUP_TIMEOUT)); do \

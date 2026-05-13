@@ -12,6 +12,7 @@ HTTP_PORT=${TEST_HTTPPORT:-8080}
 LMTP_PORT=${TEST_LMTPPORT:-8024}
 SIEVE_PORT=${TEST_SIEVEPORT:-4190}
 WEB_PORT=${TEST_WEBPORT:-8001}
+SMTP_PORT=${TEST_SMTPPORT:-8587}
 
 PASS=0
 FAIL=0
@@ -435,6 +436,81 @@ else
 fi
 
 curl -s -X DELETE "http://$HOST:$WEB_PORT/api/lmtptest_$$" >/dev/null 2>&1
+
+echo ""
+
+# -----------------------------------------------
+echo "[SMTP Submission]"
+# -----------------------------------------------
+
+SMTP_OUT=$(perl -e '
+  use IO::Socket::INET;
+  my $sock = IO::Socket::INET->new(
+    PeerAddr => "'"$HOST"'", PeerPort => '"$SMTP_PORT"',
+    Proto    => "tcp",
+    Timeout  => 10,
+  ) or die "connect: $!";
+  $sock->autoflush(1);
+  sub rd {
+    my $buf = "";
+    while (my $line = <$sock>) {
+      $buf .= $line;
+      last if $line =~ /^\d{3} /;
+    }
+    return $buf;
+  }
+  print rd();
+  print $sock "EHLO test\r\n";
+  print rd();
+  print $sock "QUIT\r\n";
+  print rd();
+  close $sock;
+' 2>&1)
+
+if echo "$SMTP_OUT" | grep -q "^220"; then
+  pass "SMTP submission port responds with 220 banner"
+else
+  fail "SMTP submission port responds with 220 banner"
+fi
+
+if echo "$SMTP_OUT" | grep -q "AUTH.*PLAIN\|AUTH.*LOGIN"; then
+  pass "SMTP EHLO advertises AUTH PLAIN and LOGIN"
+else
+  fail "SMTP EHLO advertises AUTH PLAIN and LOGIN"
+fi
+
+SMTP_AUTH_OUT=$(perl -e '
+  use IO::Socket::INET;
+  use MIME::Base64;
+  my $creds = encode_base64("\x00user1\x00anypassword", "");
+  my $sock = IO::Socket::INET->new(
+    PeerAddr => "'"$HOST"'", PeerPort => '"$SMTP_PORT"',
+    Proto    => "tcp",
+    Timeout  => 10,
+  ) or die "connect: $!";
+  $sock->autoflush(1);
+  sub rd {
+    my $buf = "";
+    while (my $line = <$sock>) {
+      $buf .= $line;
+      last if $line =~ /^\d{3} /;
+    }
+    return $buf;
+  }
+  rd();
+  print $sock "EHLO test\r\n"; rd();
+  print $sock "AUTH PLAIN $creds\r\n";
+  my $auth_resp = rd();
+  print $auth_resp;
+  print $sock "QUIT\r\n"; rd();
+  close $sock;
+' 2>&1)
+
+if echo "$SMTP_AUTH_OUT" | grep -q "^235"; then
+  pass "SMTP AUTH PLAIN succeeds with any password (fakesaslauthd)"
+else
+  fail "SMTP AUTH PLAIN succeeds with any password (fakesaslauthd)"
+fi
 
 echo ""
 
