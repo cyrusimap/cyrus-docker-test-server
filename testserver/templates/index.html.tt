@@ -27,6 +27,10 @@
       <div class="label">Management</div>
       <div class="value">Port [% web_port %]</div>
     </div>
+    <div class="info-item">
+      <div class="label">SMTP Submission</div>
+      <div class="value">Port [% smtp_port %]</div>
+    </div>
   </div>
 </div>
 
@@ -46,6 +50,9 @@
   -H "Content-Type: application/json" \
   -d '{"methodCalls":[["Mailbox/get",{},"1"]],"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:mail"]}' \
   http://localhost:[% http_port %]/jmap/</pre>
+
+  <h3>SMTP Submission</h3>
+  <pre>openssl s_client -connect localhost:[% smtp_port %] -starttls smtp</pre>
 </div>
 
 <div class="card">
