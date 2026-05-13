@@ -7,6 +7,7 @@ export HTTPPORT=${HTTPPORT:-8080}
 export LMTPPORT=${LMTPPORT:-8024}
 export SIEVEPORT=${SIEVEPORT:-4190}
 export WEBPORT=${WEBPORT:-8001}
+export SMTPPORT=${SMTPPORT:-8587}
 
 # start syslog
 if [ ! -e '/run/rsyslog.pid' ]; then
@@ -21,6 +22,17 @@ fi
 
 perl /srv/testserver/env-replace.pl /srv/testserver/main.cf /etc/postfix/main.cf
 
+cat >> /etc/postfix/master.cf << EOF
+
+# SMTP submission
+0.0.0.0:${SMTPPORT}   inet  n       -       n       -       -       smtpd
+  -o syslog_name=postfix/submission
+  -o smtpd_sasl_auth_enable=yes
+  -o smtpd_sasl_security_options=noanonymous
+  -o smtpd_relay_restrictions=permit_sasl_authenticated,defer_unauth_destination
+  -o smtpd_tls_security_level=may
+EOF
+
 /etc/init.d/postfix start
 
 # set up Cyrus
@@ -34,6 +46,9 @@ for i in $(seq 1 60); do
   [ -f /var/run/cyrus/ready ] && break
   sleep 1
 done
+
+# allow Postfix to reach the fakesaslauthd socket
+chmod 666 /var/run/cyrus/saslauthd.sock 2>/dev/null || true
 
 # create users
 if [ "X$SKIP_CREATE_USERS" == "X" ]; then
