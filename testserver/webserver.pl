@@ -31,6 +31,7 @@ my $POP3_PORT  = $ENV{POP3PORT}  // 8110;
 my $HTTP_PORT  = $ENV{HTTPPORT}  // 8080;
 my $LMTP_PORT  = $ENV{LMTPPORT}  // 8024;
 my $SIEVE_PORT = $ENV{SIEVEPORT} // 4190;
+my $SMTP_PORT  = $ENV{SMTPPORT}  // 8587;
 
 sub _common_vars {
   return (
@@ -40,6 +41,7 @@ sub _common_vars {
     http_port  => $HTTP_PORT,
     lmtp_port  => $LMTP_PORT,
     sieve_port => $SIEVE_PORT,
+    smtp_port  => $SMTP_PORT,
   );
 }
 
