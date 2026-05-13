@@ -77,6 +77,8 @@ apt-get clean
 rm -rf /var/lib/apt/lists/*
 END
 
+RUN usermod -a -G saslauth postfix
+
 # Copy Cyrus installation from builder (includes binaries, libs, and Perl modules)
 COPY --from=builder /usr/cyrus /usr/cyrus
 
@@ -123,12 +125,16 @@ END
 COPY testserver /srv/testserver
 WORKDIR /srv/testserver
 
+RUN mkdir -p /etc/postfix/sasl
+COPY testserver/sasl_smtpd.conf /etc/postfix/sasl/smtpd.conf
+
 EXPOSE 8001
 EXPOSE 8024
 EXPOSE 8080
 EXPOSE 8110
 EXPOSE 8143
 EXPOSE 4190
+EXPOSE 8587
 
 ENV SERVERNAME=cyrus-docker-test-server
 ENV DEFAULTDOMAIN=example.com
