@@ -18,6 +18,7 @@ into a slim `debian:bookworm-slim` base, producing a much smaller image.
 | HTTP (JMAP, CalDAV, CardDAV)     | 8080 |
 | LMTP                             | 8024 |
 | Sieve (ManageSieve)              | 4190 |
+| SMTP Submission                  | 8587 |
 | Management web UI / API          | 8001 |
 
 All ports are configurable via environment variables (see below).
@@ -56,6 +57,7 @@ The server is configured for a modern IMAP layout:
 | `HTTPPORT`          | `8080`                     | HTTP port (JMAP, CalDAV, CardDAV)                |
 | `LMTPPORT`          | `8024`                     | LMTP port                                        |
 | `SIEVEPORT`         | `4190`                     | ManageSieve port                                 |
+| `SMTPPORT`          | `8587`                     | SMTP submission port                             |
 | `SKIP_CREATE_USERS` | (unset)                    | If set, skip creating default users (user1–user5)|
 
 # Running
@@ -64,7 +66,7 @@ To run with all ports forwarded (create `env.txt` for any custom variables):
 
 ```
 docker run -it --env-file=env.txt \
-  -p 8080:8080 -p 8143:8143 -p 8110:8110 -p 8024:8024 -p 8001:8001 -p 4190:4190 \
+  -p 8080:8080 -p 8143:8143 -p 8110:8110 -p 8024:8024 -p 8001:8001 -p 4190:4190 -p 8587:8587 \
   ghcr.io/cyrusimap/cyrus-docker-test-server:latest
 ```
 
