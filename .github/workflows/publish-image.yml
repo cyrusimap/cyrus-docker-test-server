@@ -1,0 +1,69 @@
+name: Create and publish an OCI image
+
+on:
+  push:
+    branches: [ 'dev', 'master' ]
+  workflow_dispatch: {}
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push-image:
+    strategy:
+      fail-fast: false
+      matrix:
+        # In building cyrus-docker, we have empty platform (Intel-ish)
+        # and ARM, for macOS.  We build bookworm and trixie.  The
+        # cyrus-docker-test-server Dockerfile isn't set up to respect
+        # those yet, but I've left them here to build on later.
+        platform: [ "" ]
+        debian: [ bookworm ]
+    runs-on: ubuntu-24.04${{ matrix.platform }}
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v4.2.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v6.1.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          labels: |
+            org.cyrusimap.cyrus-docker.built-from=${{ github.sha }}
+          tags: |
+            type=ref,event=branch,enable=${{ matrix.platform == '' }}
+            type=raw,value=${{ matrix.debian }}-dev${{ matrix.platform }},enable=${{ github.ref == format('refs/heads/{0}', 'dev') }}
+            type=raw,value=${{ matrix.debian }}${{ matrix.platform }},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+
+      - name: Build and push OCI image
+        id: push
+        uses: docker/build-push-action@v7.2.0
+        with:
+          context: .
+          # build-args: DEBIAN_VERSION=${{ matrix.debian }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v4.1.0
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: false
