@@ -35,6 +35,7 @@ apt-get update
 apt-get install -y --no-install-recommends \
     postfix \
     rsyslog \
+    libbsd0 \
     libsasl2-2 \
     libsasl2-modules \
     libssl3 \
