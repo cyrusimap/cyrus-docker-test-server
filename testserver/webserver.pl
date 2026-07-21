@@ -30,18 +30,20 @@ my $IMAP_PORT  = $ENV{IMAPPORT}  // 8143;
 my $POP3_PORT  = $ENV{POP3PORT}  // 8110;
 my $HTTP_PORT  = $ENV{HTTPPORT}  // 8080;
 my $LMTP_PORT  = $ENV{LMTPPORT}  // 8024;
-my $SIEVE_PORT = $ENV{SIEVEPORT} // 4190;
-my $SMTP_PORT  = $ENV{SMTPPORT}  // 8587;
+my $SIEVE_PORT   = $ENV{SIEVEPORT}  // 4190;
+my $SMTP_PORT    = $ENV{SMTPPORT}   // 8587;
+my $MAILPIT_PORT = $ENV{MAILPITPORT} // 8025;
 
 sub _common_vars {
   return (
-    web_port   => $WEB_PORT,
-    imap_port  => $IMAP_PORT,
-    pop3_port  => $POP3_PORT,
-    http_port  => $HTTP_PORT,
-    lmtp_port  => $LMTP_PORT,
-    sieve_port => $SIEVE_PORT,
-    smtp_port  => $SMTP_PORT,
+    web_port     => $WEB_PORT,
+    imap_port    => $IMAP_PORT,
+    pop3_port    => $POP3_PORT,
+    http_port    => $HTTP_PORT,
+    lmtp_port    => $LMTP_PORT,
+    sieve_port   => $SIEVE_PORT,
+    smtp_port    => $SMTP_PORT,
+    mailpit_port => $MAILPIT_PORT,
   );
 }
 
