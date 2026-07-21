@@ -12,6 +12,19 @@ END
 # Install Mail::JMAPTalk and its pure-Perl dependencies
 RUN cpanm --notest --quiet Mail::JMAPTalk
 
+# Download the Mailpit binary (outbound-mail sink + web viewer). TARGETARCH is
+# set by buildx (amd64/arm64) and matches Mailpit's release asset names.
+ARG MAILPIT_VERSION=v1.30.5
+ARG TARGETARCH
+RUN <<END
+set -e
+cd /tmp
+wget -qO mailpit.tar.gz \
+    "https://github.com/axllent/mailpit/releases/download/${MAILPIT_VERSION}/mailpit-linux-${TARGETARCH:-amd64}.tar.gz"
+tar xzf mailpit.tar.gz mailpit
+install -m 0755 mailpit /usr/local/bin/mailpit
+END
+
 ########################################
 # Stage 2: Slim runtime image
 ########################################
@@ -89,6 +102,9 @@ COPY --from=builder /usr/local/cyruslibs /usr/local/cyruslibs
 # Copy fakesaslauthd
 COPY --from=builder /srv/cyrus-imapd/cassandane/utils/fakesaslauthd /usr/cyrus/bin/fakesaslauthd
 
+# Copy the Mailpit binary
+COPY --from=builder /usr/local/bin/mailpit /usr/local/bin/mailpit
+
 # Tie::DataUUID: pure Perl, not packaged for Debian, needed by Cyrus::AccountSync
 COPY --from=builder /usr/local/share/perl/5.36.0/Tie/DataUUID.pm /tmp/DataUUID.pm
 
@@ -136,8 +152,10 @@ EXPOSE 8110
 EXPOSE 8143
 EXPOSE 4190
 EXPOSE 8587
+EXPOSE 8025
 
 ENV SERVERNAME=cyrus-docker-test-server
 ENV DEFAULTDOMAIN=example.com
+ENV MAILPITPORT=8025
 
 CMD [ "/srv/testserver/start-server" ]
