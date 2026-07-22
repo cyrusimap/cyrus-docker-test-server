@@ -8,11 +8,22 @@ export LMTPPORT=${LMTPPORT:-8024}
 export SIEVEPORT=${SIEVEPORT:-4190}
 export WEBPORT=${WEBPORT:-8001}
 export SMTPPORT=${SMTPPORT:-8587}
+export MAILPITPORT=${MAILPITPORT:-8025}
+export MAILPITSMTP=${MAILPITSMTP:-1025}
+
+# By default, capture outbound mail in Mailpit instead of relaying it to the
+# real internet. Setting RELAYHOST explicitly overrides this with a real relay.
+# -- claude, 2026-07-21
+export RELAYHOST=${RELAYHOST:-[127.0.0.1]:${MAILPITSMTP}}
 
 # start syslog
 if [ ! -e '/run/rsyslog.pid' ]; then
   /usr/sbin/rsyslogd
 fi
+
+# start Mailpit: SMTP sink on loopback (Postfix relays to it), web UI exposed
+mailpit --smtp 127.0.0.1:${MAILPITSMTP} --listen 0.0.0.0:${MAILPITPORT} \
+  >/var/log/mailpit.log 2>&1 &
 
 # set up Postfix
 if [ "X$RELAYAUTH" != "X" ]; then

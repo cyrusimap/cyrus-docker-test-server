@@ -19,6 +19,7 @@ into a slim `debian:bookworm-slim` base, producing a much smaller image.
 | LMTP                             | 8024 |
 | Sieve (ManageSieve)              | 4190 |
 | SMTP Submission                  | 8587 |
+| Mailpit (outbound mail capture)  | 8025 |
 | Management web UI / API          | 8001 |
 
 All ports are configurable via environment variables (see below).
@@ -58,6 +59,8 @@ The server is configured for a modern IMAP layout:
 | `LMTPPORT`          | `8024`                     | LMTP port                                        |
 | `SIEVEPORT`         | `4190`                     | ManageSieve port                                 |
 | `SMTPPORT`          | `8587`                     | SMTP submission port                             |
+| `MAILPITPORT`       | `8025`                     | Mailpit web UI port                              |
+| `RELAYHOST`         | `[127.0.0.1]:1025`         | Postfix relay target for outbound mail           |
 | `SKIP_CREATE_USERS` | (unset)                    | If set, skip creating default users (user1–user5)|
 
 # Running
@@ -66,7 +69,7 @@ To run with all ports forwarded (create `env.txt` for any custom variables):
 
 ```
 docker run -it --env-file=env.txt \
-  -p 8080:8080 -p 8143:8143 -p 8110:8110 -p 8024:8024 -p 8001:8001 -p 4190:4190 -p 8587:8587 \
+  -p 8080:8080 -p 8143:8143 -p 8110:8110 -p 8024:8024 -p 8001:8001 -p 4190:4190 -p 8587:8587 -p 8025:8025 \
   ghcr.io/cyrusimap/cyrus-docker-test-server:latest
 ```
 
@@ -256,6 +259,23 @@ curl smtp://localhost:8024 --mail-from sender@example.com \
 ```
 telnet localhost 4190
 ```
+
+# Outbound mail (Mailpit)
+
+Outbound mail — anything Cyrus emits (JMAP `EmailSubmission`, Sieve `redirect`,
+iMIP invites) or anything sent through the SMTP submission port — is handed to
+Postfix. Mail addressed to a local `example.com` user is delivered into that
+user's Cyrus mailbox; mail to any other domain is **captured by
+[Mailpit](https://github.com/axllent/mailpit)** rather than being sent to the
+real internet.
+
+Browse captured messages at http://localhost:8025/ (or via Mailpit's REST API
+under `/api/v1/`). This lets you inspect exactly what a client submitted without
+anything leaking outbound.
+
+To relay outbound mail to a real server instead of capturing it, set the
+`RELAYHOST` environment variable (e.g. `RELAYHOST=[smtp.example.net]:587`, with
+`RELAYAUTH=user:pass` for authentication).
 
 # Caveats
 

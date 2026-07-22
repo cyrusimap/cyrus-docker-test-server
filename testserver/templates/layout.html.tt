@@ -56,6 +56,7 @@
       <span class="brand">Cyrus Test Server</span>
       <a href="/">Home</a>
       <a href="/ui/users">Users</a>
+      <a href="http://localhost:[% mailpit_port %]/">Mailpit</a>
     </div>
   </nav>
   <div class="container">

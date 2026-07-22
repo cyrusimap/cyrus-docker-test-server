@@ -13,6 +13,7 @@ LMTP_PORT=${TEST_LMTPPORT:-8024}
 SIEVE_PORT=${TEST_SIEVEPORT:-4190}
 WEB_PORT=${TEST_WEBPORT:-8001}
 SMTP_PORT=${TEST_SMTPPORT:-8587}
+MAILPIT_PORT=${TEST_MAILPITPORT:-8025}
 
 PASS=0
 FAIL=0
@@ -510,6 +511,68 @@ if echo "$SMTP_AUTH_OUT" | grep -q "^235"; then
   pass "SMTP AUTH PLAIN succeeds with any password (fakesaslauthd)"
 else
   fail "SMTP AUTH PLAIN succeeds with any password (fakesaslauthd)"
+fi
+
+echo ""
+
+# -----------------------------------------------
+echo "[Mailpit]"
+# -----------------------------------------------
+
+check_output "Mailpit API responds" "Version" \
+  curl -sf "http://$HOST:$MAILPIT_PORT/api/v1/info"
+
+# Submit a message to an external recipient; Postfix should relay it to the
+# Mailpit sink (local example.com mail would instead be delivered to a mailbox).
+MAILPIT_SUBJECT="mailpit-capture-$$"
+perl -e '
+  use IO::Socket::INET;
+  use MIME::Base64;
+  my $subject = shift;
+  my $creds = encode_base64("\x00user1\x00anypassword", "");
+  my $sock = IO::Socket::INET->new(
+    PeerAddr => "'"$HOST"'", PeerPort => '"$SMTP_PORT"',
+    Proto    => "tcp",
+    Timeout  => 10,
+  ) or die "connect: $!";
+  $sock->autoflush(1);
+  sub rd {
+    my $buf = "";
+    while (my $line = <$sock>) {
+      $buf .= $line;
+      last if $line =~ /^\d{3} /;
+    }
+    return $buf;
+  }
+  rd();
+  print $sock "EHLO test\r\n"; rd();
+  print $sock "AUTH PLAIN $creds\r\n"; rd();
+  print $sock "MAIL FROM:<user1\@example.com>\r\n"; rd();
+  print $sock "RCPT TO:<sink\@external.invalid>\r\n"; rd();
+  print $sock "DATA\r\n"; rd();
+  print $sock "From: user1\@example.com\r\n";
+  print $sock "To: sink\@external.invalid\r\n";
+  print $sock "Subject: $subject\r\n";
+  print $sock "\r\nThis message should be captured by Mailpit.\r\n";
+  print $sock ".\r\n"; rd();
+  print $sock "QUIT\r\n"; rd();
+  close $sock;
+' "$MAILPIT_SUBJECT" >/dev/null 2>&1
+
+# Postfix relays asynchronously, so poll Mailpit for the message.
+CAPTURED=""
+for i in $(seq 1 15); do
+  if curl -sf "http://$HOST:$MAILPIT_PORT/api/v1/search?query=$MAILPIT_SUBJECT" \
+       | grep -q "$MAILPIT_SUBJECT"; then
+    CAPTURED=1
+    break
+  fi
+  sleep 1
+done
+if [ -n "$CAPTURED" ]; then
+  pass "Outbound mail to external domain captured by Mailpit"
+else
+  fail "Outbound mail to external domain captured by Mailpit"
 fi
 
 echo ""
