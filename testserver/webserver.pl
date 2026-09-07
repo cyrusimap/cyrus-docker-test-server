@@ -435,6 +435,9 @@ sub _jmap_call {
     user     => $userid,
     password => 'password',
     using    => $using,
+    # RFC 8620 requires accountId on every method call, and Cyrus now rejects
+    # a call without one. Mail::JMAPTalk 0.19+ adds this default to each call.
+    accountId => $userid,
   );
   return $jmap->CallMethods($calls);
 }
