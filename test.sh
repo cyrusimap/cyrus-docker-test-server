@@ -435,6 +435,17 @@ else
   fail "Delivered message visible in INBOX"
 fi
 
+# The annotator sets the preview annotation on append, and JMAP reads it
+PREVIEW_OUT=$(curl -sf -u "lmtptest_$$:x" -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:mail"],"methodCalls":[["Email/query",{"accountId":"lmtptest_'"$$"'"},"q"],["Email/get",{"accountId":"lmtptest_'"$$"'","#ids":{"resultOf":"q","name":"Email/query","path":"/ids"},"properties":["preview"]},"g"]]}' \
+  "http://$HOST:$HTTP_PORT/jmap/" 2>&1) || true
+if echo "$PREVIEW_OUT" | grep -q '"preview": *"Test body\."'; then
+  pass "JMAP preview set by the annotator"
+else
+  fail "JMAP preview set by the annotator (got: $(echo "$PREVIEW_OUT" | tr -d '\n' | head -c 200))"
+fi
+
 curl -s -X DELETE "http://$HOST:$WEB_PORT/api/lmtptest_$$" >/dev/null 2>&1
 
 echo ""

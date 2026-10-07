@@ -1,0 +1,2 @@
+# name, scope, type, proxy-type, attributes, extra ACL rights (none)
+/vendor/messagingengine.com/preview,message,string,backend,value.shared,

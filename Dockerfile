@@ -73,7 +73,13 @@ apt-get install -y --no-install-recommends \
     libdata-uuid-perl \
     libmoo-perl \
     libtype-tiny-perl \
-    libfile-libmagic-perl
+    libfile-libmagic-perl \
+    libnet-server-perl \
+    libunix-syslog-perl \
+    libencode-detect-perl \
+    libhtml-quoted-perl \
+    libhtml-parser-perl \
+    libmailtools-perl
 apt-get clean
 rm -rf /var/lib/apt/lists/*
 END
@@ -95,6 +101,11 @@ COPY --from=builder /usr/local/share/perl/5.36.0/Tie/DataUUID.pm /tmp/DataUUID.p
 # Mail::JMAPTalk and its deps (Convert::Base64) installed via cpanm in builder
 COPY --from=builder /usr/local/share/perl/5.36.0/Mail/JMAPTalk.pm /usr/local/share/perl/5.36.0/Mail/JMAPTalk.pm
 COPY --from=builder /usr/local/share/perl/5.36.0/Convert/ /usr/local/share/perl/5.36.0/Convert/
+
+# Cyrus::Annotator::Daemon and ::Message, for the annotation_callout daemon
+# (testserver/annotator.pl): pure Perl in the Cyrus source tree, not
+# installed by cyd build.
+COPY --from=builder /srv/cyrus-imapd/perl/annotator/Daemon.pm /srv/cyrus-imapd/perl/annotator/Message.pm /usr/local/share/perl/5.36.0/Cyrus/Annotator/
 
 # Ensure the dynamic linker can find cyruslibs
 RUN echo "/usr/cyrus/lib" > /etc/ld.so.conf.d/cyrus.conf \
@@ -124,6 +135,8 @@ install -o cyrus -d /var/imap/sieve
 END
 
 COPY testserver /srv/testserver
+# the preview annotator must match Fastmail's: run its cases
+RUN prove /srv/testserver/t
 WORKDIR /srv/testserver
 
 RUN mkdir -p /etc/postfix/sasl

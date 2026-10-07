@@ -45,6 +45,12 @@ The server is configured for a modern IMAP layout:
 - **`fakesaslauthd`** — Any password is accepted. Useful for testing without
   managing real credentials.
 
+- **Message previews, as Fastmail makes them** — an annotator daemon
+  (`annotation_callout`) sets each message's preview annotation when it is
+  appended, using the same algorithm as Fastmail's annotator, so JMAP
+  `Email/get` `preview` and IMAP `FETCH PREVIEW` return what clients see
+  against Fastmail.
+
 ## Environment variables
 
 | Variable            | Default                    | Description                                      |

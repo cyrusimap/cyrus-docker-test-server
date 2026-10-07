@@ -34,6 +34,7 @@ The test suite checks:
 - CalDAV Calendar/set
 - CardDAV AddressBook/set
 - JMAPACCESS capability and URL
+- JMAP Email/get preview, set by the annotator on delivery
 
 ### Architecture
 
@@ -61,3 +62,19 @@ without setting `PERL5LIB`.
 
 `Tie::DataUUID` is not packaged for Debian; it is copied from the builder
 as a pure-Perl file.
+
+### Preview annotator
+
+`imapd.conf` sets `jmap_preview_annot`, so Cyrus reads previews only from
+that annotation and never generates them. `testserver/annotator.pl` is the
+`annotation_callout` daemon (a `Cyrus::Annotator::Daemon`, started from
+`cyrus.conf`'s `DAEMON` section) that sets it on every append.
+`testserver/lib/TestServer/Preview.pm` ports Fastmail's preview algorithm:
+which body part (HTML preferred), how it is decoded (including mislabelled
+charsets), and how the text is cleaned and cut. `testserver/t/preview.t`
+holds Fastmail's preview cases and runs during `docker build`.
+
+`Cyrus::Annotator::Daemon` and `::Message` are copied from the Cyrus source
+tree in the builder (`cyd build` does not install them).
+`testserver/annotation_definitions` defines the annotation, so Cyrus accepts
+it from the callout.
