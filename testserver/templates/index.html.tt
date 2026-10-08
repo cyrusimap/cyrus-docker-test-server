@@ -31,6 +31,10 @@
       <div class="label">SMTP Submission</div>
       <div class="value">Port [% smtp_port %]</div>
     </div>
+    <div class="info-item">
+      <div class="label">Mailpit (outbound mail)</div>
+      <div class="value"><a href="http://localhost:[% mailpit_port %]/">Port [% mailpit_port %]</a></div>
+    </div>
   </div>
 </div>
 
@@ -53,6 +57,12 @@
 
   <h3>SMTP Submission</h3>
   <pre>openssl s_client -connect localhost:[% smtp_port %] -starttls smtp</pre>
+
+  <h3>Outbound mail</h3>
+  <p>Mail to external domains is captured in
+  <a href="http://localhost:[% mailpit_port %]/">Mailpit</a> for inspection;
+  mail to <code>example.com</code> users is still delivered to their Cyrus
+  mailboxes.</p>
 </div>
 
 <div class="card">
