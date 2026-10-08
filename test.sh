@@ -14,6 +14,7 @@ SIEVE_PORT=${TEST_SIEVEPORT:-4190}
 WEB_PORT=${TEST_WEBPORT:-8001}
 SMTP_PORT=${TEST_SMTPPORT:-8587}
 MAILPIT_PORT=${TEST_MAILPITPORT:-8025}
+JMAP_BASE_URL=${TEST_JMAPBASEURL:-http://localhost:8080}
 
 PASS=0
 FAIL=0
@@ -284,6 +285,17 @@ echo "[HTTP/JMAP]"
 
 # Create user for JMAP
 curl -s -T testserver/examples/empty.json "http://$HOST:$WEB_PORT/api/jmaptest_$$" >/dev/null 2>&1
+
+# JMAP session advertises absolute URLs
+API_URL=$(curl -sfL -u "jmaptest_$$:x" "http://$HOST:$HTTP_PORT/.well-known/jmap" 2>&1 \
+  | perl -MJSON::PP -0777 -ne 'print decode_json($_)->{apiUrl}' 2>/dev/null) || true
+if [ "$API_URL" = "$JMAP_BASE_URL/jmap/" ]; then
+  pass "JMAP session apiUrl is absolute ($API_URL)"
+elif [ "$API_URL" = "/jmap/" ]; then
+  echo "  SKIP: JMAP session apiUrl is absolute (Cyrus lacks jmap_base_url)"
+else
+  fail "JMAP session apiUrl is absolute (expected '$JMAP_BASE_URL/jmap/', got '$API_URL')"
+fi
 
 # JMAP Mailbox/get
 JMAP_OUT=$(curl -sf -u "jmaptest_$$:x" -X POST \

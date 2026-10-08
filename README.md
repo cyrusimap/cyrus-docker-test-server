@@ -62,6 +62,7 @@ The server is configured for a modern IMAP layout:
 | `IMAPPORT`          | `8143`                     | IMAP port                                        |
 | `POP3PORT`          | `8110`                     | POP3 port                                        |
 | `HTTPPORT`          | `8080`                     | HTTP port (JMAP, CalDAV, CardDAV)                |
+| `JMAPBASEURL`       | `http://localhost:8080`    | Scheme and host advertised in JMAP URLs          |
 | `LMTPPORT`          | `8024`                     | LMTP port                                        |
 | `SIEVEPORT`         | `4190`                     | ManageSieve port                                 |
 | `SMTPPORT`          | `8587`                     | SMTP submission port                             |
@@ -236,6 +237,11 @@ curl -u user1:x -X POST -H "Content-Type: application/json" \
   -d '{"methodCalls":[["Mailbox/get",{},"1"]],"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:mail"]}' \
   http://localhost:8080/jmap/
 ```
+
+The JMAP session object (`/.well-known/jmap`) and `JMAPACCESS` advertise
+absolute URLs starting with `JMAPBASEURL`.  If clients reach the server by
+another name or port, such as through an HTTPS reverse proxy, set it to
+match, e.g. `JMAPBASEURL=https://jmap.example.com`.
 
 The JMAP access URL can be discovered via the `JMAPACCESS` IMAP capability:
 

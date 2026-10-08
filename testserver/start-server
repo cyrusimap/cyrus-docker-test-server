@@ -11,6 +11,9 @@ export SMTPPORT=${SMTPPORT:-8587}
 export MAILPITPORT=${MAILPITPORT:-8025}
 export MAILPITSMTP=${MAILPITSMTP:-1025}
 
+# where clients reach JMAP, e.g. https://jmap.example.com behind a proxy
+export JMAPBASEURL=${JMAPBASEURL:-http://localhost:${HTTPPORT}}
+
 # By default, capture outbound mail in Mailpit instead of relaying it to the
 # real internet. Setting RELAYHOST explicitly overrides this with a real relay.
 # -- claude, 2026-07-21
