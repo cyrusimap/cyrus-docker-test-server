@@ -53,7 +53,7 @@ EOF
 perl /srv/testserver/env-replace.pl /srv/testserver/imapd.conf /etc/imapd.conf
 perl /srv/testserver/env-replace.pl /srv/testserver/cyrus.conf /etc/cyrus.conf
 rm -f /var/run/cyrus/ready
-/usr/cyrus/bin/master -p /var/run/cyrus/master.pid -d -L /var/run/cyrus/log
+/usr/cyrus/libexec/master -p /var/run/cyrus/master.pid -d -L /var/run/cyrus/log
 
 # wait for Cyrus master to signal readiness
 for i in $(seq 1 60); do
