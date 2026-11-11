@@ -8,15 +8,15 @@ make run      # Run the server with all ports forwarded
 make test     # Run the integration test suite (test.sh)
 make stop     # Stop the running container
 make clean    # Remove stopped containers
-make publish  # Push the image to ghcr.io
 ```
 
-### Manual build and publish
+### Publishing
 
-```sh
-docker build --platform linux/amd64 -t ghcr.io/cyrusimap/cyrus-docker-test-server:latest .
-docker push ghcr.io/cyrusimap/cyrus-docker-test-server:latest
-```
+Images are published by GitHub Actions
+(`.github/workflows/publish-image.yml`) on every push to `master` or `dev`.
+Each architecture is built natively and the results are merged into one
+multi-arch tag, so don't push locally built images to ghcr.io: a local
+build would replace that manifest with a single architecture.
 
 ### Running tests manually
 

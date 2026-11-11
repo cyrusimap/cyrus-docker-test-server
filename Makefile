@@ -6,7 +6,7 @@ PLATFORM = linux/amd64
 # How long to wait for the container to be ready (seconds)
 STARTUP_TIMEOUT = 120
 
-.PHONY: build test run stop clean publish
+.PHONY: build test run stop clean
 
 build:
 	docker build --platform $(PLATFORM) . -t $(IMAGE_NAME):$(TAG)
@@ -31,8 +31,3 @@ stop:
 
 clean: stop
 	-docker rmi $(IMAGE_NAME):$(TAG) 2>/dev/null
-
-publish: build test
-	@echo "All tests passed. Pushing image..."
-	docker push $(IMAGE_NAME):$(TAG)
-	@echo "Published $(IMAGE_NAME):$(TAG)"
