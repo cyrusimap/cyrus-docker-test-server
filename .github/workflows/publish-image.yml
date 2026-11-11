@@ -52,7 +52,7 @@ jobs:
       - name: Set up Buildx
         # push-by-digest needs the docker-container driver, not the
         # default docker driver.
-        uses: docker/setup-buildx-action@v3.11.1
+        uses: docker/setup-buildx-action@v4.4.1
 
       - name: Extract labels for Docker
         id: meta
@@ -78,7 +78,7 @@ jobs:
             > "/tmp/digests/${{ matrix.debian }}-${{ matrix.arch }}"
 
       - name: Upload the digest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: digest-${{ matrix.debian }}-${{ matrix.arch }}
           path: /tmp/digests/*
@@ -101,7 +101,7 @@ jobs:
 
     steps:
       - name: Download the digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.2
         with:
           path: /tmp/digests
           pattern: digest-${{ matrix.debian }}-*
