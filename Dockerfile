@@ -1,7 +1,7 @@
 ########################################
 # Stage 1: Build Cyrus using the full dev image
 ########################################
-FROM ghcr.io/cyrusimap/cyrus-docker:bookworm AS builder
+FROM ghcr.io/cyrusimap/cyrus-docker:trixie AS builder
 
 RUN <<END
 set -e
@@ -28,7 +28,7 @@ END
 ########################################
 # Stage 2: Slim runtime image
 ########################################
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 LABEL org.opencontainers.image.authors="Cyrus IMAP <docker@role.fastmailteam.com>"
 LABEL org.opencontainers.image.source="https://github.com/cyrusimap/cyrus-docker-test-server"
@@ -51,7 +51,7 @@ apt-get install -y --no-install-recommends \
     libbsd0 \
     libsasl2-2 \
     libsasl2-modules \
-    libssl3 \
+    libssl3t64 \
     libjansson4 \
     libxml2 \
     libsqlite3-0 \
@@ -59,14 +59,14 @@ apt-get install -y --no-install-recommends \
     libpcre2-posix3 \
     libwrap0 \
     libcld2-0 \
-    libicu72 \
+    libicu76 \
     libuuid1 \
     libnsl2 \
     libcom-err2 \
     libstdc++6 \
     libgcc-s1 \
     liblzma5 \
-    libtirpc3 \
+    libtirpc3t64 \
     libgssapi-krb5-2 \
     libkrb5-3 \
     libk5crypto3 \
@@ -111,17 +111,21 @@ COPY --from=builder /srv/cyrus-imapd/cassandane/utils/fakesaslauthd /usr/cyrus/b
 # Copy the Mailpit binary
 COPY --from=builder /usr/local/bin/mailpit /usr/local/bin/mailpit
 
+# The system Perl version, shared by the builder and runtime images; it
+# names the site_perl paths below.
+ARG PERL_VERSION=5.40.1
+
 # Tie::DataUUID: pure Perl, not packaged for Debian, needed by Cyrus::AccountSync
-COPY --from=builder /usr/local/share/perl/5.36.0/Tie/DataUUID.pm /tmp/DataUUID.pm
+COPY --from=builder /usr/local/share/perl/${PERL_VERSION}/Tie/DataUUID.pm /tmp/DataUUID.pm
 
 # Mail::JMAPTalk and its deps (Convert::Base64) installed via cpanm in builder
-COPY --from=builder /usr/local/share/perl/5.36.0/Mail/JMAPTalk.pm /usr/local/share/perl/5.36.0/Mail/JMAPTalk.pm
-COPY --from=builder /usr/local/share/perl/5.36.0/Convert/ /usr/local/share/perl/5.36.0/Convert/
+COPY --from=builder /usr/local/share/perl/${PERL_VERSION}/Mail/JMAPTalk.pm /usr/local/share/perl/${PERL_VERSION}/Mail/JMAPTalk.pm
+COPY --from=builder /usr/local/share/perl/${PERL_VERSION}/Convert/ /usr/local/share/perl/${PERL_VERSION}/Convert/
 
 # Cyrus::Annotator::Daemon and ::Message, for the annotation_callout daemon
 # (testserver/annotator.pl): pure Perl in the Cyrus source tree, not
 # installed by cyd build.
-COPY --from=builder /srv/cyrus-imapd/perl/annotator/Daemon.pm /srv/cyrus-imapd/perl/annotator/Message.pm /usr/local/share/perl/5.36.0/Cyrus/Annotator/
+COPY --from=builder /srv/cyrus-imapd/perl/annotator/Daemon.pm /srv/cyrus-imapd/perl/annotator/Message.pm /usr/local/share/perl/${PERL_VERSION}/Cyrus/Annotator/
 
 # Ensure the dynamic linker can find cyruslibs
 RUN echo "/usr/cyrus/lib" > /etc/ld.so.conf.d/cyrus.conf \

@@ -39,10 +39,10 @@ The test suite checks:
 ### Architecture
 
 Multi-stage Docker build:
-1. **Builder** (`cyrus-docker:bookworm`) — clones and builds Cyrus from source
+1. **Builder** (`cyrus-docker:trixie`) — clones and builds Cyrus from source
    using `cyd clone && cyd build`, producing `/usr/cyrus` and
    `/usr/local/cyruslibs`
-2. **Runtime** (`debian:bookworm-slim`) — copies only the compiled output and
+2. **Runtime** (`debian:trixie-slim`) — copies only the compiled output and
    installs runtime `.so` libraries via `apt-get`
 
 This keeps the image size small (no compilers, no -dev packages).

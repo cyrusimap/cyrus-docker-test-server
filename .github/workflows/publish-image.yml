@@ -26,11 +26,11 @@ jobs:
           - platform: linux/amd64
             runner: ubuntu-24.04
             arch: amd64
-            debian: bookworm
+            debian: trixie
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
             arch: arm64
-            debian: bookworm
+            debian: trixie
 
     runs-on: ${{ matrix.runner }}
 
@@ -97,7 +97,7 @@ jobs:
 
     strategy:
       matrix:
-        debian: [ bookworm ]
+        debian: [ trixie ]
 
     steps:
       - name: Download the digests

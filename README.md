@@ -6,8 +6,8 @@ This project is a docker image running an instance of the Cyrus IMAPd server
 with IMAP4, POP3, JMAP, LMTP, CalDAV, CardDAV and Sieve services running.
 
 The image uses a multi-stage build: Cyrus is compiled in the full
-`cyrus-docker:bookworm` dev image, then only the runtime files are copied
-into a slim `debian:bookworm-slim` base, producing a much smaller image.
+`cyrus-docker:trixie` dev image, then only the runtime files are copied
+into a slim `debian:trixie-slim` base, producing a much smaller image.
 
 ## Ports
 
